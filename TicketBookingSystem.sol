@@ -46,8 +46,63 @@ contract Show {
     }
 
     /*
-    function buy() {
+
+    implement a function buy that B and C individually call to get a ticket
+    each, which corresponds to a specific show, date and seat. The function generates
+    and transfers a unique ticket upon purchase, as an instance of the TICKET token;
+
+    */
+
+    function buy() public {
 
     }
+
+    /*
+
+    implement a function verify that allows anyone with the token ID to check
+    the validity of the ticket and the address it is supposed to be used by;
+
     */
+
+    function verify() public {
+
+    }
+
+    /*
+
+    implement a function refund to refund tickets if a show gets cancelled;
+
+    */
+
+    function refund() public {
+
+    }
+
+    /*
+
+    implement a function validate to validate a ticket; it can be called only
+    in a specific time frame, corresponding to a suitable amount of time before the
+    beginning of the show. Upon validation, the ticket is destroyed, and a function
+    releasePoster releases unique proof of purchase (you may consider merging these
+    two functions together). This new item must be a unique instance of a POSTER
+    token;
+
+    */
+
+    function validate() public {
+
+    }
+
+    /*
+
+    implement a function tradeTicket that allows C and D to safely trade (i.e.
+    exchange for another or sell for ether) a ticket directly between each other.
+
+    */
+
+    function tradeTicket() public {
+
+    }
+
+
 }
