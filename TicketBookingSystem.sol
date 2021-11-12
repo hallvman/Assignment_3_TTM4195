@@ -2,12 +2,20 @@
 
 pragma solidity 0.8.7;
 
-contract Ticket is ERC721Burnable, Ownable {
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+contract Ticket is ERC721 {
+    uint256 public tokenCounter;
+    constructor () public ERC721("Ticket", "show"){
+        tokenCounter = 0;
+    }
 }
 
-contract Poster is ERC721Burnable, Ownable {
-
+contract Poster is ERC721 {
+    uint256 public tokenCounter;
+    constructor () public ERC721("poster", "show"){
+        tokenCounter = 0;
+    }
 }
 
 contract Show {
