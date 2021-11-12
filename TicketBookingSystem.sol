@@ -58,5 +58,9 @@ contract TicketBookingSystem{
     function validate() {
 
     }
+
+    function tradeTicket(){
+    
+    }
     */
 }
