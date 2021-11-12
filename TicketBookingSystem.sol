@@ -1,66 +1,45 @@
-pragma solidity >=0.7.0 <0.9.0;
+// SPDX-License-Identifier: GPL-3.0
 
-contract TicketBookingSystem{
-    /**
-     * For each show, initialize the smart contract with the title of the show, the
-     * available seats and any other relevant information. Each seat is an object that
-     * contains at least
-     * title and date of the show,
-     * the price;
-     * the seat number and row;
-     * a link to the seat view (to realize a service offered, for example, by seatplan.com). It does not need to be working, but set up a field for it;
-     */
+pragma solidity 0.8.7;
 
-    //string funker = "funker";
+contract Ticket is ERC721Burnable, Ownable {
 
-    Show[] public show;
-    Member[] public member;
-    int256 public showCount = 0;
+}
 
-    struct Show {
+contract Poster is ERC721Burnable, Ownable {
+
+}
+
+contract Show {
+    string show_title;
+    int256 n_rows = 3;
+    int256 n_seats_per_row = 20;
+    string link = "https://seatplan.com/";
+    mapping(bytes32 => Seat) public seats;
+
+    struct Seat {
+        address owner;
         string title;
-        int256 availableSeats;
+        string date;
+        int256 price;
+        int256 s_row;
+        int256 s_number;
+        string set_view_link;
     }
 
-    struct Member {
-        // Name is either A, B, C or D
-        string name;
+    constructor (string memory _show_title, string memory date, int256 price){
+        show_title = _show_title;
+        for (int256 r_nr = 0; r_nr < n_rows; r_nr++) {
+            for (int256 c_nr = 0; c_nr < n_seats_per_row; c_nr++) {
+                bytes32 mapping_key = keccak256(abi.encodePacked(r_nr, c_nr));
+                seats[mapping_key] = Seat(address(0), _show_title, date, price, r_nr, c_nr, link);
+            }
+        }
     }
 
-    function addMember(string memory name) public {
-        member.push(Member(name));
-    }
-
-    // Add show to the array
-    function addShow(string memory title, int256 availableSeats) public {
-        show.push(Show(title, availableSeats));
-        incrementCount();
-    }
-
-    function incrementCount() internal {
-        showCount += 1;
-    }
-
-    /**
-    * Code to implement
+    /*
     function buy() {
 
-    }
-
-    function verify() {
-
-    }
-
-    function refund() {
-
-    }
-
-    function validate() {
-
-    }
-
-    function tradeTicket(){
-    
     }
     */
 }
