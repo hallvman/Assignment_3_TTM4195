@@ -54,6 +54,7 @@ contract Show {
     show_status status = show_status.Scheduled;
     address systems_wallet = address(1);
     string show_title;
+    uint256 show_time;
     uint256 n_rows = 3;
     uint256 n_seats_per_row = 20;
     string link = "https://seatplan.com/";
@@ -76,8 +77,9 @@ contract Show {
     }
     enum show_status {Scheduled, On, Over, Cancelled}
 
-    constructor (string memory _show_title, uint256 date, uint256 time, uint256 price){
+    constructor (string memory _show_title, uint256 date, uint256 _time, uint256 price){
         show_title = _show_title;
+        show_time = _time;
         for (uint256 r_nr = 1; r_nr <= n_rows; r_nr++) {
             for (uint256 c_nr = 1; c_nr <= n_seats_per_row; c_nr++) {
                 bytes32 mapping_key = keccak256(abi.encodePacked(r_nr, c_nr));
