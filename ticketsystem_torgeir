@@ -2,7 +2,7 @@
 pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-address A = address(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4);
+//address A = address(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4);
 
 contract Ticket is ERC721{
     uint256 public tokenCounter;
