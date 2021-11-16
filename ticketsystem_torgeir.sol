@@ -31,7 +31,7 @@ contract Ticket is ERC721{
         return newTokenId;
     }
     
-    function refund(uint256 tokenId) public {
+    function burn(uint256 tokenId) public {
         _burn(tokenId);
     }
 }
@@ -43,7 +43,7 @@ contract Poster is ERC721{
         posterTokenCount = 0;
     }
     
-    function buy(address _to) public{
+    function releasePoster(address _to) public{
         uint256 newTokenId = posterTokenCount;
         
         _safeMint(_to, newTokenId);
@@ -63,6 +63,7 @@ contract Show {
     uint256 number_of_tickets_sold = 0;
     
     Ticket myTicket = new Ticket();
+    Poster myPoster = new Poster();
 
     struct Seat {
         address owner;
@@ -104,12 +105,15 @@ contract Show {
         seats[mapping_key].owner = msg.sender;
     }
     
-    /* implement a function verify that allows anyone with the token ID to checkthe validity of the ticket and the address it is supposed to be used by */
-    function verify(uint256 tokenID) public view{
-        /* Verify that an address owns a token*/
-        require(tokenOwners[tokenID] == msg.sender);
+    /* implement a function "verify" that allows anyone with the token ID to checkthe validity of the ticket and the address it is supposed to be used by */
+    function verify(uint256 tokenID) public view returns(bool){
+        /* Verify that an address owns this token */
+        bool is_owner = tokenOwners[tokenID] == msg.sender;
+        require(is_owner);
+        return is_owner;
     }
     
+    /* implement a function "refund" to refund tickets if a show gets cancelled; */
     function refund() public payable{
         /* Refund funds to ticket owners in caase of cancelled show */
         /* Accumulate refund amount for each of the addresses that own ticket(s)*/
@@ -122,12 +126,54 @@ contract Show {
                 }
             }
         }
-        /* Refund the funds address by address*/
+        /* Refund the tickets bought by each address*/
         for (uint256 token_ID = 0;  token_ID <= number_of_tickets_sold; token_ID++) {
             address payable owner_address = tokenOwners[token_ID];
             uint256 amount = payback_amount[owner_address];
             (bool success, ) = owner_address.call{value:amount}("");
             require(success, "Transfer failed.");
+            myTicket.burn(token_ID);
         }
     }
+    
+    /*  implement a function "validate"2 to validate a ticket; it can be called onlyin a specific time frame,
+    corresponding to a suitable amount of time before thebeginning of the show.
+    Upon validation, the ticket is destroyed, and a functionreleasePosterreleases unique proof of purchase (you may consider merging thesetwo functions together).
+    This new item must be a unique instance of a POSTERtoken;
+    */
+    function validate(uint256 tokenID) public{
+    /* Exchange a ticket for a poster a short time before the show starts*/
+        /* TODO: Add logic to this bool*/
+        bool correctTimeFrame = true;
+        require(correctTimeFrame, "The validate function is not availible in this time frame");
+        require(verify(tokenID),"This user does not own this ticket");
+        myPoster.releasePoster(msg.sender);
+        myTicket.burn(tokenID);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
