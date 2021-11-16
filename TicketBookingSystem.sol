@@ -4,27 +4,35 @@ pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract TICKET is ERC721{
+contract Ticket is ERC721{
     uint256 public tokenCounter;
-    mapping(uint256 => Ticket) public tickets;
+    mapping(uint256 => TicketInfo) public tickets;
     
-    struct Ticket {
+    struct TicketInfo {
         //address owner;
-        int256 row;
-        int256 s_number;
+        string title;
+        int256 date;
+        uint256 row;
+        uint256 s_number;
+        int256 price;
+        string link;
     }
     
     constructor () ERC721("Ticket","TCKT"){
         tokenCounter = 0;
     }
 
-    function buy(int256 _row, int256 _seat_number) public{
+    function buy(address _to, string memory _title, int256 _date, uint256 _row, uint256 _seat_number, int256 _price, string memory _link) public {
         uint256 newTokenId = tokenCounter;
     
-        tickets[newTokenId] = Ticket(_row, _seat_number);
-        _safeMint(msg.sender, newTokenId);
+        tickets[newTokenId] = TicketInfo(_title, _date, _row, _seat_number, _price, _link);
+        _safeMint(_to, newTokenId);
         
         tokenCounter = tokenCounter + 1;
+    }
+    
+    function refund(uint256 tokenId) public {
+        _burn(tokenId);
     }
 }
 
@@ -49,7 +57,7 @@ contract Show {
     string link = "https://seatplan.com/";
     mapping(bytes32 => Seat) public seats;
     
-    TICKET myTicket = new TICKET();
+    Ticket myTicket = new Ticket();
 
     struct Seat {
         address owner;
@@ -63,8 +71,8 @@ contract Show {
 
     constructor (string memory _show_title, int256 date, int256 price){
         show_title = _show_title;
-        for (int256 r_nr = 0; r_nr < n_rows; r_nr++) {
-            for (int256 c_nr = 0; c_nr < n_seats_per_row; c_nr++) {
+        for (int256 r_nr = 1; r_nr <= n_rows; r_nr++) {
+            for (int256 c_nr = 1; c_nr <= n_seats_per_row; c_nr++) {
                 bytes32 mapping_key = keccak256(abi.encodePacked(r_nr, c_nr));
                 seats[mapping_key] = Seat(address(0), _show_title, date, price, r_nr, c_nr, link);
             }
@@ -75,13 +83,17 @@ contract Show {
     implement a function buy that B and C individually call to get a ticket
     each, which corresponds to a specific show, date and seat. The function generates
     and transfers a unique ticket upon purchase, as an instance of the TICKET token;
-    string memory _show_title, string memory date, uint256 row, uint256 seat_number
-    */ 
+    */
 
-    function buy(int256 row, int256 seat_number) public {
+    function buy(uint256 row, uint256 seat_number) public {
         require(row <= 3, "Only 3 rows");
         require(seat_number <= 20, "Only 20 seats per row");
-        myTicket.buy(msg.sender, row, seat_number);
+        
+        bytes32 mapping_key = keccak256(abi.encodePacked(row, seat_number));
+        require(seats[mapping_key].owner == address(0), "This seat is already taken!");
+        
+        myTicket.buy(msg.sender, seats[mapping_key].title, seats[mapping_key].date, row, seat_number, seats[mapping_key].price, seats[mapping_key].set_view_link);
+        seats[mapping_key].owner = msg.sender;
     }
 
     /*
@@ -101,8 +113,15 @@ contract Show {
 
     */
 
-    function refund() public {
-
+    function refund(uint256 row, uint256 seat_number, uint256 tokenId) public {
+        require(row <= 3, "Only 3 rows");
+        require(seat_number <= 20, "Only 20 seats per row");
+        
+        bytes32 mapping_key = keccak256(abi.encodePacked(row, seat_number));
+        require(seats[mapping_key].owner == msg.sender, "There is not any ticket on this address!");
+        
+        myTicket.refund(tokenId);
+        seats[mapping_key].owner = address(0);
     }
 
     /*
