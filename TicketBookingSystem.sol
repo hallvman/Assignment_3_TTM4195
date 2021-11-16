@@ -5,41 +5,41 @@ pragma solidity 0.8.10;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract TICKET is ERC721{
-    // Variables for tokenID and mapping for the tickets
     uint256 public tokenCounter;
     mapping(uint256 => Ticket) public tickets;
     
-    // Creating the struct to save the tickets
     struct Ticket {
-        address owner;
+        //address owner;
         int256 row;
         int256 s_number;
     }
     
-    // Starts the id at 0 since nothing is added
     constructor () ERC721("Ticket","TCKT"){
         tokenCounter = 0;
     }
 
-    // Buy function. Which creates a ticket to each seat. Cannot be bought again
-    function buy(address _to, int256 _row, int256 _seat_number) public returns (uint256){
-        uint256 newTokenId = tokenCounter + 1;
+    function buy(int256 _row, int256 _seat_number) public{
+        uint256 newTokenId = tokenCounter;
     
-        tickets[newTokenId] = Ticket(_to, _row, _seat_number);
-        _safeMint(_to, newTokenId);
+        tickets[newTokenId] = Ticket(_row, _seat_number);
+        _safeMint(msg.sender, newTokenId);
         
-        return newTokenId;
+        tokenCounter = tokenCounter + 1;
     }
-
 }
-contract POSTER is ERC721{
+
+contract Poster is ERC721{
     uint256 public posterTokenCount;
     
     constructor () ERC721("Poster","PSTR"){
         posterTokenCount = 0;
     }
     
-    
+    function buy(address _to) public{
+        uint256 newTokenId = posterTokenCount;
+        
+        _safeMint(_to, newTokenId);
+    }
 }
 
 contract Show {
@@ -49,21 +49,19 @@ contract Show {
     string link = "https://seatplan.com/";
     mapping(bytes32 => Seat) public seats;
     
-    // Creates an instance of the TICKET and POSTER
     TICKET myTicket = new TICKET();
-    POSTER myTicket = new POSTER();
 
     struct Seat {
         address owner;
         string title;
-        string date;
+        int256 date;
         int256 price;
         int256 s_row;
         int256 s_number;
         string set_view_link;
     }
 
-    constructor (string memory _show_title, string memory date, int256 price){
+    constructor (string memory _show_title, int256 date, int256 price){
         show_title = _show_title;
         for (int256 r_nr = 0; r_nr < n_rows; r_nr++) {
             for (int256 c_nr = 0; c_nr < n_seats_per_row; c_nr++) {
@@ -74,12 +72,11 @@ contract Show {
     }
 
     /*
-
     implement a function buy that B and C individually call to get a ticket
     each, which corresponds to a specific show, date and seat. The function generates
     and transfers a unique ticket upon purchase, as an instance of the TICKET token;
     string memory _show_title, string memory date, uint256 row, uint256 seat_number
-    */
+    */ 
 
     function buy(int256 row, int256 seat_number) public {
         require(row <= 3, "Only 3 rows");
@@ -133,4 +130,6 @@ contract Show {
     function tradeTicket() public {
 
     }
+
+
 }
