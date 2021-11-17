@@ -2,7 +2,6 @@
 pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-//address A = address(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4);
 
 contract Ticket is ERC721{
     uint256 public tokenCounter;
@@ -52,6 +51,9 @@ contract Poster is ERC721{
 }
 
 contract Show {
+    address payable public seller;
+    address payable public buyer;
+    
     show_status status = show_status.Scheduled;
     address systems_wallet = address(1);
     string show_title;
@@ -77,7 +79,8 @@ contract Show {
     }
     enum show_status {Scheduled, On, Over, Cancelled}
 
-    constructor (string memory _show_title, uint256 date, uint256 price){
+    constructor (string memory _show_title, uint256 date, uint256 price) payable {
+        seller = payable(msg.sender);
         show_title = _show_title;
         for (uint256 r_nr = 1; r_nr <= n_rows; r_nr++) {
             for (uint256 c_nr = 1; c_nr <= n_seats_per_row; c_nr++) {
@@ -86,6 +89,11 @@ contract Show {
             }
         }
     }
+    
+    modifier onlySeller(){
+        require(msg.sender == seller, "Only the seller can do this");
+        _;
+    }
 
     /*
     implement a function buy that B and C individually call to get a ticket
@@ -93,17 +101,18 @@ contract Show {
     and transfers a unique ticket upon purchase, as an instance of the TICKET token;
     */
 
-    function buy(uint256 row, uint256 seat_number) public {
-        require(status == show_status.Scheduled);
+    function buy(uint256 row, uint256 seat_number) public payable {
+        buyer = payable(msg.sender);
+        require(status == show_status.Scheduled, "This show is not scheduled");
         require(row >= 1 && row <= 3 , "Pick row number between 1 and 3");
         require(seat_number >= 1 && seat_number <= 20, "Pick seat number between 1 and 20");
         
         bytes32 mapping_key = keccak256(abi.encodePacked(row, seat_number));
         require(seats[mapping_key].owner == address(0), "This seat is already taken!");
         
-        number_of_tickets_sold = myTicket.buy(msg.sender, seats[mapping_key].title, seats[mapping_key].date, row, seat_number, seats[mapping_key].price, seats[mapping_key].set_view_link);
-        tokenOwners[number_of_tickets_sold] = payable(msg.sender);
-        seats[mapping_key].owner = msg.sender;
+        number_of_tickets_sold = myTicket.buy(buyer, seats[mapping_key].title, seats[mapping_key].date, row, seat_number, seats[mapping_key].price, seats[mapping_key].set_view_link);
+        tokenOwners[number_of_tickets_sold] = buyer;
+        seats[mapping_key].owner = buyer;
     }
     
     /* implement a function "verify" that allows anyone with the token ID to checkthe validity of the ticket and the address it is supposed to be used by */
@@ -115,9 +124,10 @@ contract Show {
     }
     
     /* implement a function "refund" to refund tickets if a show gets cancelled; */
-    function refund() public payable{
-        /* Refund funds to ticket owners in caase of cancelled show */
+    function refund() onlySeller public payable{
+        /* Refund funds to ticket owners in case of cancelled show */
         /* Accumulate refund amount for each of the addresses that own ticket(s)*/
+        status = show_status.Cancelled;
         for (uint256 r_nr = 1; r_nr <= n_rows; r_nr++) {
             for (uint256 c_nr = 1; c_nr <= n_seats_per_row; c_nr++) {
                 bytes32 mapping_key = keccak256(abi.encodePacked(r_nr, c_nr));
@@ -145,42 +155,16 @@ contract Show {
     function validate(uint256 tokenID) public{
     /* Exchange a ticket for a poster a short time before the show starts*/
         /* TODO: Add logic to this bool*/
-        bool correctTimeFrame = true;
-        require(correctTimeFrame, "The validate function is not availible in this time frame");
+        bool correctTimeFrame = (status == show_status.On);
+        require(correctTimeFrame, "The validate function is not available in this time frame");
         require(verify(tokenID),"This user does not own this ticket");
         myPoster.releasePoster(msg.sender);
         myTicket.burn(tokenID);
     }
-    function tradeTicketForEther(address seller, uint256 ticketID, address buyer) public {/* TODO In the case of exchange user1's ticket for ether*/}
-    function tradeTickets(address seller, uint256 ticketID, address buyer) public{/* TODO In the case of two user exchanging tickets*/}
+    //function tradeTicketForEther(address seller, uint256 ticketID, address buyer) public {/* TODO In the case of exchange user1's ticket for ether*/}
+    //function tradeTickets(address seller, uint256 ticketID, address buyer) public{/* TODO In the case of two user exchanging tickets*/}
     
     /* TODO implement a function "tradeTicket" that allows users C and D to safely trade (i.e.exchange for another or sell for ether) a ticket directly between each other.*/
     function tradeTicket(address user1_address, uint256 user1_ticketID, address user2_address, uint256 user2_ticketID) public{
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
