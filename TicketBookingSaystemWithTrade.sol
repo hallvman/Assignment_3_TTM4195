@@ -145,7 +145,7 @@ contract Trading {
         tradeCounter += 1;
     }
     
-    function executeTrade(uint256 _trade)
+    function tradeticket(uint256 _trade)
     public
     payable
     {
