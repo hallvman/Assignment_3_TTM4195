@@ -10,8 +10,6 @@ contract Ticket is ERC721, Ownable {
     address public minterAddress;
     uint256 public tokenId;
     
-    
-
     //maps tokenId to ticket information struct
     mapping(uint256 => TicketInfo) public ticketInfoMapping;
 
@@ -101,8 +99,6 @@ contract Trading {
     
     uint256 public tradeCounter;
     
-    
-    
     constructor (Ticket _ticketInstace) public{
         ticketInstance = _ticketInstace;
         tradeCounter = 0;
@@ -116,8 +112,7 @@ contract Trading {
     }  
     
     mapping(uint256 => Trade) public trades;
-
-
+    
     function getTrade(uint256 _trade)
         public
         virtual
@@ -133,8 +128,6 @@ contract Trading {
         public
         virtual
     {
-        
-        
         ticketInstance.transferFrom(msg.sender, address(this), _ticketTokenId);
         trades[tradeCounter] = Trade({
             tradePostedBy: msg.sender,
