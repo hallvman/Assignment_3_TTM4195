@@ -109,7 +109,7 @@ contract TicketBookingSystem {
     //this mapping stores amount to be refunded against each address if show gets cancelled
     mapping(address => uint256) amountToBeRefunded;
 
-    //this mapping stores a Seat struct against each seat index (1-60)
+    //this mapping stores a Seat struct against each seat index (1-20)
     mapping(uint256 => Seat) public seats;
 
     //this mapping stores an array of ticketIds bought by each address
@@ -170,7 +170,7 @@ contract TicketBookingSystem {
 
     /*
     this function returns the seat index from 1 to rows*seatsPerRow, so in this case
-    it will return an index from 1 to 60. e.g., if row is 2 and seat is 13, index will
+    it will return an index from 1 to 20. e.g., if row is 2 and seat is 13, index will
     be 33 
     */
     function seatIndex(uint256 row, uint256 seat) private returns (uint256) {
